@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createServer as createViteServer } from 'vite';
 import apiRouter from './server/routes/apiRoutes';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -25,6 +24,7 @@ app.get('/api/health', (req, res) => {
 // --- Vite Dev Server / Static Production Middleware ---
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
@@ -33,7 +33,7 @@ async function startServer() {
   } else {
     const distPath = path.resolve(__dirname, 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.use((req, res) => {
       res.sendFile(path.resolve(distPath, 'index.html'));
     });
   }
