@@ -11,7 +11,37 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(cors());
+
+// --- Configure Production & Development CORS for Vercel & Render ---
+const allowedOrigins = [
+  'https://hospital-managmnet-system-nmzb.vercel.app',
+  'https://medisync-hms-6urv.onrender.com',
+  process.env.CORS_ORIGIN,
+].filter(Boolean) as string[];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.startsWith('http://localhost') ||
+        origin.startsWith('http://127.0.0.1') ||
+        origin.includes('vercel.app') ||
+        origin.includes('onrender.com') ||
+        origin.includes('.proxy.googlers.com') ||
+        origin.includes('.run.app')
+      ) {
+        return callback(null, true);
+      }
+      callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  })
+);
 
 // --- Mount API Routes FIRST (Prevents HTML fallback for API calls) ---
 app.use('/api', apiRouter);

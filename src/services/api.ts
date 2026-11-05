@@ -1,5 +1,18 @@
 const getToken = () => localStorage.getItem('medisync_auth_token');
 
+export const getApiBaseUrl = (): string => {
+  // 1. Explicit environment variable override
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '');
+  }
+  // 2. If running on Vercel frontend deployment, route requests to Render backend
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    return 'https://medisync-hms-6urv.onrender.com';
+  }
+  // 3. Same-origin default for Render monolith or local development
+  return '';
+};
+
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const token = getToken();
   const headers: Record<string, string> = {
@@ -11,7 +24,8 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`/api${endpoint}`, {
+  const baseUrl = getApiBaseUrl();
+  const response = await fetch(`${baseUrl}/api${endpoint}`, {
     ...options,
     headers,
   });
