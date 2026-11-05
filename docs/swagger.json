@@ -1,0 +1,167 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MediSync Hospital Management System REST API",
+    "version": "1.0.0",
+    "description": "Comprehensive RESTful API specification for the MediSync Hospital Management System (HMS), supporting 9 role-based access control tiers, Electronic Medical Records (EMR), Clinical Consultations, Pharmacy Dispensing, Laboratory Management, Inpatient Bed Allocations, and itemized billing."
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "Primary API gateway"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "User authentication and JWT token issuance",
+        "tags": ["Authentication"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "example": "doctor.chen@hospital.com" },
+                  "password": { "type": "string", "example": "securePassword123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Successful login with access and refresh tokens" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/patients": {
+      "get": {
+        "summary": "List all patients with optional search and filtering",
+        "tags": ["Patients"],
+        "parameters": [
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["Active", "Inpatient", "Discharged"] } }
+        ],
+        "responses": {
+          "200": { "description": "Array of patient records with demographics" }
+        }
+      },
+      "post": {
+        "summary": "Register a new patient with unique ID generation",
+        "tags": ["Patients"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["firstName", "lastName", "dateOfBirth", "gender", "bloodGroup", "phone"],
+                "properties": {
+                  "firstName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "dateOfBirth": { "type": "string", "format": "date" },
+                  "gender": { "type": "string" },
+                  "bloodGroup": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "allergies": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Patient successfully registered" }
+        }
+      }
+    },
+    "/appointments": {
+      "get": {
+        "summary": "List appointments with doctor and date filters",
+        "tags": ["Appointments"],
+        "responses": {
+          "200": { "description": "List of appointments" }
+        }
+      },
+      "post": {
+        "summary": "Schedule an appointment with conflict prevention check",
+        "tags": ["Appointments"],
+        "responses": {
+          "201": { "description": "Appointment successfully booked" },
+          "409": { "description": "Doctor schedule conflict detected" }
+        }
+      }
+    },
+    "/emr/consultations": {
+      "get": {
+        "summary": "Retrieve clinical consultations and EMR encounters",
+        "tags": ["EMR"],
+        "responses": {
+          "200": { "description": "Clinical encounter records" }
+        }
+      },
+      "post": {
+        "summary": "Record clinical consultation with ICD-10 diagnosis",
+        "tags": ["EMR"],
+        "responses": {
+          "201": { "description": "Consultation record saved" }
+        }
+      }
+    },
+    "/pharmacy/dispense": {
+      "post": {
+        "summary": "Dispense medications with automatic batch decrement and negative stock prevention",
+        "tags": ["Pharmacy"],
+        "responses": {
+          "200": { "description": "Medications successfully dispensed" },
+          "400": { "description": "Expired batch or insufficient stock" }
+        }
+      }
+    },
+    "/laboratory/orders": {
+      "get": {
+        "summary": "List diagnostic lab orders and specimens",
+        "tags": ["Laboratory"],
+        "responses": {
+          "200": { "description": "Lab orders" }
+        }
+      }
+    },
+    "/inpatient/admissions": {
+      "post": {
+        "summary": "Admit patient and allocate bed atomically",
+        "tags": ["Inpatient"],
+        "responses": {
+          "201": { "description": "Inpatient admission completed" },
+          "400": { "description": "Bed is unavailable" }
+        }
+      }
+    },
+    "/billing/invoices": {
+      "get": {
+        "summary": "List itemized invoices and billing statements",
+        "tags": ["Billing"],
+        "responses": {
+          "200": { "description": "Invoices" }
+        }
+      }
+    }
+  }
+}

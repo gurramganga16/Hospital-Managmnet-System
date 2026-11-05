@@ -1,0 +1,8 @@
+{
+  "name": "MediSync Hospital Management System",
+  "description": "Production-grade Hospital Management System (HMS) featuring role-based access control, electronic medical records (EMR), patient management, appointments, pharmacy dispensing, laboratory orders, inpatient bed tracking, and comprehensive billing.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
